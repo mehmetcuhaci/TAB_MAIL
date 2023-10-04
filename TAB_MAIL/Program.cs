@@ -11,13 +11,13 @@ namespace TAB_MAIL
             DataTable customerData = GetCustomer(); // GetCustomer'dan verileri al
             foreach (DataRow row in customerData.Rows)
             {
-                string customerExtId = row["CUSTOMER_EXT_ID"].ToString();
+                string CustomerExtId = row["CUSTOMER_EXT_ID"].ToString();
                 string fullName = row["FULL_NAME"].ToString();
                 string mobilePhone = row["MOBILE_PHONE_NUMBER"].ToString();
                 string email = row["EMAIL"].ToString();
                 DateTime created = Convert.ToDateTime(row["CREATED"]);
 
-                PostCustomer(customerExtId, fullName, mobilePhone, email, created); // Verileri PostCustomer ile gönder
+                PostCustomer(CustomerExtId, fullName, mobilePhone, email, created); // Verileri PostCustomer ile gönder
             }
         }
 
@@ -44,24 +44,42 @@ namespace TAB_MAIL
             {
                 connection.Open();
 
-                string insertQuery = "INSERT INTO TAB_GIDA_CUSTOMER (CUSTOMER_EXT_ID, FULL_NAME, MOBİLE_PHONE, EMAIL, CREATED) " +
-                                     "VALUES (@customerExtId, @fullName, @mobilePhone, @email, @created)";
+                // Önce veritabanında aynı ID var mı diye kontrol et
+                string checkQuery = "SELECT COUNT(*) FROM TAB_GIDA_CUSTOMER WHERE CUSTOMER_EXT_ID = @customerExtId";
 
-                using (var cmd = new SqlCommand(insertQuery, connection))
+                using (var checkCmd = new SqlCommand(checkQuery, connection))
                 {
-                    cmd.Parameters.AddWithValue("@customerExtId", customerExtId);
-                    cmd.Parameters.AddWithValue("@fullName", fullName);
-                    cmd.Parameters.AddWithValue("@mobilePhone", mobilePhone);
-                    cmd.Parameters.AddWithValue("@email", email);
-                    cmd.Parameters.AddWithValue("@created", created);
+                    checkCmd.Parameters.AddWithValue("@customerExtId", customerExtId);
+                    int count = (int)checkCmd.ExecuteScalar();
 
-                    cmd.ExecuteNonQuery();
+                    if (count > 0)
+                    {
+                        Console.WriteLine("Bu ID zaten mevcut, veri eklenmedi.");
+                    }
+                    else
+                    {
+                        // ID mevcut değilse ekleme işlemine devam et
+                        string insertQuery = "INSERT INTO TAB_GIDA_CUSTOMER (CUSTOMER_EXT_ID, FULL_NAME, MOBİLE_PHONE, EMAIL, CREATED) " +
+                                             "VALUES (@customerExtId, @fullName, @mobilePhone, @email, @created)";
 
-                    Console.WriteLine("Veri başarıyla eklendi.");
+                        using (var cmd = new SqlCommand(insertQuery, connection))
+                        {
+                            cmd.Parameters.AddWithValue("@customerExtId", customerExtId);
+                            cmd.Parameters.AddWithValue("@fullName", fullName);
+                            cmd.Parameters.AddWithValue("@mobilePhone", mobilePhone);
+                            cmd.Parameters.AddWithValue("@email", email);
+                            cmd.Parameters.AddWithValue("@created", created);
+
+                            cmd.ExecuteNonQuery();
+
+                            Console.WriteLine("Veri başarıyla eklendi.");
+                        }
+                    }
                 }
 
                 connection.Close();
             }
         }
+
     }
 }
