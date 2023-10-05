@@ -7,8 +7,8 @@ namespace TAB_MAIL
     internal class Program
     {
         public static void Main(string[] args)
-        {
-            DataTable customerData = GetCustomer(); // GetCustomer'dan verileri al
+        { 
+             DataTable customerData = GetCustomer(); // GetCustomer'dan verileri al
             foreach (DataRow row in customerData.Rows)
             {
                 string CustomerExtId = row["CUSTOMER_EXT_ID"].ToString();
@@ -26,7 +26,7 @@ namespace TAB_MAIL
             using (var connection = new SqlConnection("user id=GTPDB;Password=GTPDB;data source=atagtp001;persist security info=False;Initial catalog=gtpbrdb"))
             {
                 connection.Open();
-                string searchQuery1 = "SELECT CUSTOMER_EXT_ID, FULL_NAME, MOBILE_PHONE_NUMBER, EMAIL, CREATED FROM GTPFSI_CUSTOMER_DETAILS_VIEW WHERE EMAIL LIKE '%@atayatirim.com' ORDER BY CREATED DESC";
+                string searchQuery1 = "SELECT CUSTOMER_EXT_ID, FULL_NAME, MOBILE_PHONE_NUMBER, EMAIL, CREATED FROM GTPFSI_CUSTOMER_DETAILS_VIEW WHERE EMAIL LIKE '%@atayatirim.com.tr' ORDER BY CREATED DESC";
 
                 SqlDataAdapter adapter = new SqlDataAdapter(searchQuery1, connection);
                 DataTable dataTable = new DataTable();
@@ -80,6 +80,12 @@ namespace TAB_MAIL
                 connection.Close();
             }
         }
+
+        /*SELECT CUSTOMER_EXT_ID,EMAIL
+          FROM TAB_GIDA_CUSTOMER
+          GROUP BY CUSTOMER_EXT_ID,EMAIL
+          HAVING COUNT(DISTINCT EMAIL)> 0; */
+
 
     }
 }
