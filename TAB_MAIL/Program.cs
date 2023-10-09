@@ -1,22 +1,17 @@
 ﻿using System;
 using System.Data;
 using System.Data.SqlClient;
-using System.Data.SqlTypes;
-using System.Globalization;
-using System.IO;
 using System.Net;
 using System.Net.Mail;
+using System.Runtime.InteropServices;
 using Serilog;
 
 namespace TAB_MAIL
 {
     internal class Program
     {
-     
-
         public static void Main(string[] args)
         {
-            SmtMail();
             DataTable customerData = GetCustomer();
 
             foreach (DataRow row in customerData.Rows)
@@ -28,22 +23,18 @@ namespace TAB_MAIL
                 DateTime created = Convert.ToDateTime(row["CREATED"]);
 
                 PostCustomer(CustomerExtId, fullName, mobilePhone, email, created);
-                
             }
-            
         }
 
         public static DataTable GetCustomer()
         {
-          
-
             using (var connection = new SqlConnection("user id=GTPDB;Password=GTPDB;data source=atagtp001;persist security info=False;Initial catalog=gtpbrdb"))
             {
                 connection.Open();
                 string searchQuery1 = "SELECT CUSTOMER_EXT_ID, FULL_NAME, MOBILE_PHONE_NUMBER, EMAIL, CREATED FROM GTPFSI_CUSTOMER_DETAILS_VIEW WHERE CREATED >= '2023-10-01' AND EMAIL LIKE '%@atayatirim.com.tr'";
 
                 SqlDataAdapter adapter = new SqlDataAdapter(searchQuery1, connection);
-                
+
                 DataTable dataTable = new DataTable();
                 adapter.Fill(dataTable);
 
@@ -95,6 +86,9 @@ namespace TAB_MAIL
                                 cmd.ExecuteNonQuery();
 
                                 Console.WriteLine("Veri başarıyla eklendi.");
+
+                               // E - posta gönderme
+                               // SmtMail(email);        ABİ BURAYI AÇIP ÇALIŞTIRMA HEPSİNE MAİL ATAR :D
                             }
                         }
                     }
@@ -104,46 +98,42 @@ namespace TAB_MAIL
                     }
                     Log.CloseAndFlush();
                 }
-               
 
                 connection.Close();
             }
-            
         }
 
-        public static void SmtMail()
+        public static void SmtMail(string toEmail)
         {
-            string smtpServer = "smtp-mail.outlook.";
+            HoldingLog();
+            string smtpServer = "smtp-mail.outlook.com";
             int smtpPort = 587;
             string smtpUsername = "mehmet17014@hotmail.com";
             string smtpPassword = "021302135i";
-
-            //string fromEmail = "mehmet17014@hotmail.com";
-            //string toEmail = "mehmet.cuhaci10@gmail.com";
 
             using (SmtpClient smtpClient = new SmtpClient(smtpServer, smtpPort))
             {
                 smtpClient.Credentials = new NetworkCredential(smtpUsername, smtpPassword);
                 smtpClient.EnableSsl = true;
 
-                MailMessage mail = new MailMessage(smtpUsername, email);
+                MailMessage mail = new MailMessage(smtpUsername, toEmail);
                 mail.Subject = "TEST";
                 mail.Body = "TEST E POSTASI";
 
                 try
                 {
                     smtpClient.Send(mail);
-                   
+                    Console.WriteLine("Gönderildi");
+                    Log.Information("Mail başarıyla gönderildi!");
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
-                    Console.WriteLine($"Gönderilemedi Hata : {ex.Message}"); 
+                    Console.WriteLine($"Gönderilemedi Hata : {ex.Message}");
+                    Log.Error($"HATA: {ex.Message}");
                 }
             }
+            Log.CloseAndFlush();
         }
-        
-        
-
 
         public static void HoldingLog()
         {
