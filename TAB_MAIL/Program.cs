@@ -14,15 +14,6 @@ namespace TAB_MAIL
 
         public static void Main(string[] args)
         {
-            if (lastRunDate < SqlDateTime.MinValue.Value)
-            {
-                lastRunDate = SqlDateTime.MinValue.Value;
-            }
-            else if (lastRunDate > SqlDateTime.MaxValue.Value)
-            {
-                lastRunDate = SqlDateTime.MaxValue.Value;
-            }
-
             DataTable customerData = GetCustomer();
 
             foreach (DataRow row in customerData.Rows)
@@ -31,55 +22,29 @@ namespace TAB_MAIL
                 string fullName = row["FULL_NAME"].ToString();
                 string mobilePhone = row["MOBILE_PHONE_NUMBER"].ToString();
                 string email = row["EMAIL"].ToString();
-                DateTime created = ConvertToDateTime(row["CREATED"].ToString());
+                DateTime created = Convert.ToDateTime(row["CREATED"]);
 
                 PostCustomer(CustomerExtId, fullName, mobilePhone, email, created);
             }
-
-            string filePath = "lastRunDate.txt";
-
-            if (File.Exists(filePath) && DateTime.TryParse(File.ReadAllText(filePath), out lastRunDate))
-            {
-                Console.WriteLine("Uygulama en son çalıştı: " + lastRunDate.ToString("yyyy-MM-dd HH:mm:ss"));
-            }
-            else
-            {
-                Console.WriteLine("Bu uygulama daha önce hiç çalışmamış.");
-                lastRunDate = DateTime.MinValue;
-            }
-
-            DateTime currentRunDate = DateTime.Now;
-            File.WriteAllText(filePath, currentRunDate.ToString());
+            
         }
-
-        public static DateTime ConvertToDateTime(string createdString)
-        {
-            createdString = createdString.Replace("PM", " PM").Replace("AM", " AM"); // Önce AM ve PM arasındaki boşlukları ekleyin
-            createdString = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(createdString.ToLower()); // Tüm harfleri küçük harfe çevirin ve başlık durumuna getirin
-            createdString = createdString.Replace(" ", ""); // Boşlukları kaldırın
-
-            var cultureInfo = new CultureInfo("en-US");
-            var dateTimeFormat = "MMMddyyyyhttm";
-
-            DateTime createdDateTime = DateTime.ParseExact(createdString, dateTimeFormat, cultureInfo);
-
-            return createdDateTime;
-        }
-
 
         public static DataTable GetCustomer()
         {
+            DateTime currentTime = new DateTime(2023, 10, 01);
+
             using (var connection = new SqlConnection("user id=GTPDB;Password=GTPDB;data source=atagtp001;persist security info=False;Initial catalog=gtpbrdb"))
             {
                 connection.Open();
                 string searchQuery1 = "SELECT CUSTOMER_EXT_ID, FULL_NAME, MOBILE_PHONE_NUMBER, EMAIL, CREATED " +
                       "FROM GTPFSI_CUSTOMER_DETAILS_VIEW " +
-                      "WHERE EMAIL LIKE '%@atayatirim.com.tr' " +
-                      "AND CREATED > @lastRunDate " +
+                      "WHERE CREATED >= @currentTime AND EMAIL LIKE '%@atayatirim.com.tr' " +
                       "ORDER BY CREATED DESC";
 
+
+                SqlCommand command = new SqlCommand(searchQuery1, connection);
+                command.Parameters.AddWithValue("@currentTime", DateTime.Now);
                 SqlDataAdapter adapter = new SqlDataAdapter(searchQuery1, connection);
-                adapter.SelectCommand.Parameters.AddWithValue("@lastRunDate", lastRunDate);
                 DataTable dataTable = new DataTable();
                 adapter.Fill(dataTable);
 
