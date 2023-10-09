@@ -49,7 +49,7 @@ namespace TAB_MAIL
 
                 connection.Close();
 
-                if (dataTable.Rows.Count==0)
+                if (dataTable.Rows.Count == 0)
                 {
                     Console.WriteLine("Kullanıcı bulunamamıştır");
                     Console.ReadLine();
@@ -113,34 +113,36 @@ namespace TAB_MAIL
 
         public static void SmtMail()
         {
-            string smtpServer = "smtp-mail.outlook.com";
+            string smtpServer = "smtp-mail.outlook.";
             int smtpPort = 587;
             string smtpUsername = "mehmet17014@hotmail.com";
             string smtpPassword = "021302135i";
 
-            string fromEmail = "mehmet17014@hotmail.com";
-            string toEmail = "mehmet.cuhaci10@gmail.com";
+            //string fromEmail = "mehmet17014@hotmail.com";
+            //string toEmail = "mehmet.cuhaci10@gmail.com";
 
             using (SmtpClient smtpClient = new SmtpClient(smtpServer, smtpPort))
             {
                 smtpClient.Credentials = new NetworkCredential(smtpUsername, smtpPassword);
                 smtpClient.EnableSsl = true;
 
-                MailMessage mail = new MailMessage(fromEmail, toEmail);
+                MailMessage mail = new MailMessage(smtpUsername, email);
                 mail.Subject = "TEST";
                 mail.Body = "TEST E POSTASI";
 
                 try
                 {
                     smtpClient.Send(mail);
-                    Console.WriteLine("Gönderildi");
+                   
                 }
-                catch
+                catch(Exception ex)
                 {
-                    Console.WriteLine("Gönderilemedi Hata");
+                    Console.WriteLine($"Gönderilemedi Hata : {ex.Message}"); 
                 }
             }
         }
+        
+        
 
 
         public static void HoldingLog()
