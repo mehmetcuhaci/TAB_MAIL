@@ -4,16 +4,19 @@ using System.Data.SqlClient;
 using System.Data.SqlTypes;
 using System.Globalization;
 using System.IO;
+using System.Net;
+using System.Net.Mail;
 using Serilog;
 
 namespace TAB_MAIL
 {
     internal class Program
     {
-        private static DateTime lastRunDate;
+     
 
         public static void Main(string[] args)
         {
+            SmtMail();
             DataTable customerData = GetCustomer();
 
             foreach (DataRow row in customerData.Rows)
@@ -25,30 +28,32 @@ namespace TAB_MAIL
                 DateTime created = Convert.ToDateTime(row["CREATED"]);
 
                 PostCustomer(CustomerExtId, fullName, mobilePhone, email, created);
+                
             }
             
         }
 
         public static DataTable GetCustomer()
         {
-            DateTime currentTime = new DateTime(2023, 10, 01);
+          
 
             using (var connection = new SqlConnection("user id=GTPDB;Password=GTPDB;data source=atagtp001;persist security info=False;Initial catalog=gtpbrdb"))
             {
                 connection.Open();
-                string searchQuery1 = "SELECT CUSTOMER_EXT_ID, FULL_NAME, MOBILE_PHONE_NUMBER, EMAIL, CREATED " +
-                      "FROM GTPFSI_CUSTOMER_DETAILS_VIEW " +
-                      "WHERE CREATED >= @currentTime AND EMAIL LIKE '%@atayatirim.com.tr' " +
-                      "ORDER BY CREATED DESC";
+                string searchQuery1 = "SELECT CUSTOMER_EXT_ID, FULL_NAME, MOBILE_PHONE_NUMBER, EMAIL, CREATED FROM GTPFSI_CUSTOMER_DETAILS_VIEW WHERE CREATED >= '2023-10-01' AND EMAIL LIKE '%@atayatirim.com.tr'";
 
-
-                SqlCommand command = new SqlCommand(searchQuery1, connection);
-                command.Parameters.AddWithValue("@currentTime", DateTime.Now);
                 SqlDataAdapter adapter = new SqlDataAdapter(searchQuery1, connection);
+                
                 DataTable dataTable = new DataTable();
                 adapter.Fill(dataTable);
 
                 connection.Close();
+
+                if (dataTable.Rows.Count==0)
+                {
+                    Console.WriteLine("Kullanıcı bulunamamıştır");
+                    Console.ReadLine();
+                }
 
                 return dataTable;
             }
@@ -99,10 +104,44 @@ namespace TAB_MAIL
                     }
                     Log.CloseAndFlush();
                 }
+               
 
                 connection.Close();
             }
+            
         }
+
+        public static void SmtMail()
+        {
+            string smtpServer = "smtp-mail.outlook.com";
+            int smtpPort = 587;
+            string smtpUsername = "mehmet17014@hotmail.com";
+            string smtpPassword = "021302135i";
+
+            string fromEmail = "mehmet17014@hotmail.com";
+            string toEmail = "mehmet.cuhaci10@gmail.com";
+
+            using (SmtpClient smtpClient = new SmtpClient(smtpServer, smtpPort))
+            {
+                smtpClient.Credentials = new NetworkCredential(smtpUsername, smtpPassword);
+                smtpClient.EnableSsl = true;
+
+                MailMessage mail = new MailMessage(fromEmail, toEmail);
+                mail.Subject = "TEST";
+                mail.Body = "TEST E POSTASI";
+
+                try
+                {
+                    smtpClient.Send(mail);
+                    Console.WriteLine("Gönderildi");
+                }
+                catch
+                {
+                    Console.WriteLine("Gönderilemedi Hata");
+                }
+            }
+        }
+
 
         public static void HoldingLog()
         {
