@@ -28,10 +28,10 @@ namespace TAB_MAIL
 
         public static DataTable GetCustomer()
         {
-            using (var connection = new SqlConnection("user id=GTPDB;Password=GTPDB;data source=atagtp001;persist security info=False;Initial catalog=gtpbrdb"))
+            using (var connection = new SqlConnection("************"))
             {
                 connection.Open();
-                string searchQuery1 = "SELECT CUSTOMER_EXT_ID, FULL_NAME, MOBILE_PHONE_NUMBER, EMAIL, CREATED FROM GTPFSI_CUSTOMER_DETAILS_VIEW WHERE CREATED >= '2023-10-01' AND EMAIL LIKE '%@atayatirim.com.tr'";
+                string searchQuery1 = "SELECT CUSTOMER_EXT_ID, FULL_NAME, MOBILE_PHONE_NUMBER, EMAIL, CREATED FROM ******** WHERE CREATED >= '2023-10-01' AND EMAIL LIKE '**********'";
 
                 SqlDataAdapter adapter = new SqlDataAdapter(searchQuery1, connection);
 
@@ -53,11 +53,11 @@ namespace TAB_MAIL
         public static void PostCustomer(string customerExtId, string fullName, string mobilePhone, string email, DateTime created)
         {
             HoldingLog();
-            using (var connection = new SqlConnection("user id=sa;Password=ghibli117;data source=ata_web_db001;persist security info=False;Initial catalog=HospitalDatabase"))
+            using (var connection = new SqlConnection("*****************"))
             {
                 connection.Open();
 
-                string checkQuery = "SELECT COUNT(*) FROM TAB_GIDA_CUSTOMER WHERE CUSTOMER_EXT_ID = @customerExtId";
+                string checkQuery = "SELECT COUNT(*) FROM ****** WHERE CUSTOMER_EXT_ID = @customerExtId";
 
                 using (var checkCmd = new SqlCommand(checkQuery, connection))
                 {
@@ -72,7 +72,7 @@ namespace TAB_MAIL
                         }
                         else
                         {
-                            string insertQuery = "INSERT INTO TAB_GIDA_CUSTOMER (CUSTOMER_EXT_ID, FULL_NAME, MOBİLE_PHONE, EMAIL,CREATED) " +
+                            string insertQuery = "INSERT INTO ********** (CUSTOMER_EXT_ID, FULL_NAME, MOBİLE_PHONE, EMAIL,CREATED) " +
                                                  "VALUES (@customerExtId, @fullName, @mobilePhone, @email,@created )";
 
                             using (var cmd = new SqlCommand(insertQuery, connection))
@@ -110,7 +110,7 @@ namespace TAB_MAIL
             string smtpServer = "smtp-mail.outlook.com";
             int smtpPort = 587;
             string smtpUsername = "mehmet17014@hotmail.com";
-            string smtpPassword = "021302135i";
+            string smtpPassword = "*******";
 
             using (SmtpClient smtpClient = new SmtpClient(smtpServer, smtpPort))
             {
